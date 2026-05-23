@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AYT Yazar-Eser Oyunu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161618;
+    --surface2: #1e1e22;
+    --border: #2a2a30;
+    --accent: #c9a84c;
+    --accent2: #e8c96a;
+    --text: #e8e4d8;
+    --text-muted: #7a7568;
+    --correct: #4a9e6b;
+    --wrong: #c05050;
+    --correct-bg: rgba(74,158,107,0.15);
+    --wrong-bg: rgba(192,80,80,0.15);
+    --halk: #7eb3d4;
+    --divan: #c48fd4;
+    --tanzimat: #d4a887;
+    --servet: #87c4a8;
+    --milli: #d4c487;
+    --cumhuriyet: #d48787;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.03) 0%, transparent 50%);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-top: 20px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-style: italic;
+    letter-spacing: 0.5px;
+  }
+
+  .ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0;
+    color: var(--accent);
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+  .ornament::before, .ornament::after {
+    content: '';
+    flex: 1;
+    max-width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  /* Dönem seçimi */
+  #donem-secim {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  #donem-secim h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .donem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .donem-btn {
+    padding: 18px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    transition: all 0.25s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .donem-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .donem-btn[data-donem="halk"]::after { background: var(--halk); }
+  .donem-btn[data-donem="divan"]::after { background: var(--divan); }
+  .donem-btn[data-donem="tanzimat"]::after { background: var(--tanzimat); }
+  .donem-btn[data-donem="servet"]::after { background: var(--servet); }
+  .donem-btn[data-donem="milli"]::after { background: var(--milli); }
+  .donem-btn[data-donem="cumhuriyet"]::after { background: var(--cumhuriyet); }
+
+  .donem-btn:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+
+  .donem-btn.selected {
+    border-color: var(--accent);
+    background: rgba(201,168,76,0.1);
+    color: var(--accent);
+  }
+
+  .donem-label {
+    display: block;
+    font-size: 0.75rem;
+    font-family: 'Crimson Pro', serif;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .basla-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0d0d0f;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 1px;
+  }
+
+  .basla-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.3);
+  }
+
+  .basla-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Oyun ekranı */
+  #oyun-ekran {
+    display: none;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .skor-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .skor-item {
+    text-align: center;
+  }
+
+  .skor-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .skor-lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .donem-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-bottom: 16px;
+    border: 1px solid;
+  }
+
+  .soru-kart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 32px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .soru-kart::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    font-size: 8rem;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+    opacity: 0.06;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .soru-ust {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .eser-adi {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .soru-alt {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .secenekler {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .secenek-btn {
+    padding: 16px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.3;
+  }
+
+  .secenek-harf {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .secenek-btn:not(:disabled):hover {
+    border-color: var(--accent);
+    background: rgba(201,168,76,0.08);
+    transform: translateX(3px);
+  }
+
+  .secenek-btn:not(:disabled):hover .secenek-harf {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .secenek-btn.dogru {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    cursor: default;
+  }
+
+  .secenek-btn.dogru .secenek-harf {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: white;
+  }
+
+  .secenek-btn.yanlis {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .secenek-btn.yanlis .secenek-harf {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: white;
+  }
+
+  .secenek-btn:disabled:not(.dogru):not(.yanlis) {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .sonuc-mesaj {
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .sonuc-mesaj.dogru {
+    display: block;
+    background: var(--correct-bg);
+    border: 1px solid var(--correct);
+    color: #6dd49a;
+  }
+
+  .sonuc-mesaj.yanlis {
+    display: block;
+    background: var(--wrong-bg);
+    border: 1px solid var(--wrong);
+    color: #e07070;
+  }
+
+  .devam-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 1px;
+    display: none;
+  }
+
+  .devam-btn:hover {
+    background: rgba(201,168,76,0.1);
+    transform: translateY(-1px);
+  }
+
+  /* Sonuç ekranı */
+  #sonuc-ekran {
+    display: none;
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+  }
+
+  .sonuc-kart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    margin-bottom: 20px;
+  }
+
+  .sonuc-baslik {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .sonuc-puan {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin: 20px 0 8px;
+  }
+
+  .sonuc-toplam {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+
+  .sonuc-detay {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 24px;
+  }
+
+  .detay-item {
+    text-align: center;
+  }
+
+  .detay-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .detay-val.green { color: var(--correct); }
+  .detay-val.red { color: var(--wrong); }
+
+  .detay-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .sonuc-yorum {
+    font-size: 1.1rem;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .tekrar-btns {
+    display: flex;
+    gap: 12px;
+  }
+
+  .tekrar-btns button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #0d0d0f;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.3);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  @media (max-width: 500px) {
+    .secenekler { grid-template-columns: 1fr; }
+    .donem-grid { grid-template-columns: 1fr 1fr; }
+    .soru-kart { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Yazar · Eser</h1>
+  <div class="ornament">❧</div>
+  <p>AYT Türk Dili ve Edebiyatı · Hazırlık Oyunu</p>
+</header>
+
+<!-- Dönem seçim -->
+<div id="donem-secim">
+  <h2>Hangi dönemden çalışmak istersiniz?</h2>
+  <div class="donem-grid">
+    <button class="donem-btn" data-donem="halk" onclick="donemSec(this)">
+      Halk Edebiyatı
+      <span class="donem-label">Sözlü gelenek</span>
+    </button>
+    <button class="donem-btn" data-donem="divan" onclick="donemSec(this)">
+      Divan Edebiyatı
+      <span class="donem-label">Klasik dönem</span>
+    </button>
+    <button class="donem-btn" data-donem="tanzimat" onclick="donemSec(this)">
+      Tanzimat
+      <span class="donem-label">1860 – 1896</span>
+    </button>
+    <button class="donem-btn" data-donem="servet" onclick="donemSec(this)">
+      Servet-i Fünun
+      <span class="donem-label">1896 – 1901</span>
+    </button>
+    <button class="donem-btn" data-donem="milli" onclick="donemSec(this)">
+      Milli Edebiyat
+      <span class="donem-label">1911 – 1923</span>
+    </button>
+    <button class="donem-btn" data-donem="cumhuriyet" onclick="donemSec(this)">
+      Cumhuriyet
+      <span class="donem-label">1923 – günümüz</span>
+    </button>
+    <button class="donem-btn" data-donem="karisik" onclick="donemSec(this)" style="grid-column: 1 / -1;">
+      🎲 Karışık — Tüm Dönemler
+      <span class="donem-label">Hepsinden rastgele</span>
+    </button>
+  </div>
+  <button class="basla-btn" id="basla-btn" onclick="oyunuBaslat()" disabled>Oyunu Başlat</button>
+</div>
+
+<!-- Oyun ekranı -->
+<div id="oyun-ekran">
+  <div class="skor-bar">
+    <div class="skor-item">
+      <div class="skor-val" id="soru-no">1/20</div>
+      <div class="skor-lbl">Soru</div>
+    </div>
+    <div class="skor-item">
+      <div class="skor-val" id="dogru-sayisi">0</div>
+      <div class="skor-lbl">Doğru</div>
+    </div>
+    <div class="skor-item">
+      <div class="skor-val" id="yanlis-sayisi">0</div>
+      <div class="skor-lbl">Yanlış</div>
+    </div>
+    <div class="skor-item">
+      <div class="skor-val" id="skor">0</div>
+      <div class="skor-lbl">Puan</div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="soru-kart">
+    <div class="soru-ust">Bu eserin yazarı kimdir?</div>
+    <div class="donem-badge" id="donem-badge"></div>
+    <div class="eser-adi" id="eser-adi">—</div>
+    <div class="soru-alt" id="soru-alt"></div>
+  </div>
+
+  <div class="secenekler" id="secenekler"></div>
+
+  <div class="sonuc-mesaj" id="sonuc-mesaj"></div>
+
+  <button class="devam-btn" id="devam-btn" onclick="sonrakiSoru()">Sonraki Soru →</button>
+</div>
+
+<!-- Sonuç ekranı -->
+<div id="sonuc-ekran">
+  <div class="sonuc-kart">
+    <div class="sonuc-baslik" id="sonuc-baslik">Tebrikler!</div>
+    <div class="sonuc-puan" id="sonuc-puan">0</div>
+    <div class="sonuc-toplam">puan</div>
+    <div class="sonuc-detay">
+      <div class="detay-item">
+        <div class="detay-val green" id="fin-dogru">0</div>
+        <div class="detay-lbl">Doğru</div>
+      </div>
+      <div class="detay-item">
+        <div class="detay-val red" id="fin-yanlis">0</div>
+        <div class="detay-lbl">Yanlış</div>
+      </div>
+      <div class="detay-item">
+        <div class="detay-val" id="fin-yuzde" style="color:var(--accent)">0%</div>
+        <div class="detay-lbl">Başarı</div>
+      </div>
+    </div>
+    <div class="sonuc-yorum" id="sonuc-yorum"></div>
+  </div>
+  <div class="tekrar-btns">
+    <button class="btn-secondary" onclick="anaMenuye()">Ana Menü</button>
+    <button class="btn-primary" onclick="tekrarOyna()">Tekrar Oyna</button>
+  </div>
+</div>
+
+<script>
+// ===================== VERİ =====================
+const VERI = {
+  halk: [
+    { yazar: "Kayıkçı Kul Mustafa", eserler: ["Genç Osman Destanı"] },
+    { yazar: "Aşık Ömer", eserler: ["Şairname"] },
+    { yazar: "Levni", eserler: ["Atalar Sözü Destanı"] },
+    { yazar: "Dertli", eserler: ["Telli Sazdır Bunun Adı"] },
+    { yazar: "Dadaloğlu", eserler: ["Kalktı Göç Eyledi Avşar İlleri"] },
+    { yazar: "Bayburtlu Zihni", eserler: ["Sergüzeştname"] },
+    { yazar: "Yunus Emre", eserler: ["Risaletün Nushiyye"] },
+    { yazar: "Hacı Bektaş Veli", eserler: ["Makalat"] },
+    { yazar: "Kaygusuz Abdal", eserler: ["Budalaname"] },
+    { yazar: "Erzurumlu İbrahim Hakkı", eserler: ["Marifetname"] },
+  ],
+  divan: [
+    { yazar: "Hoca Dehhani", eserler: ["Selçuklu Şehnamesi"] },
+    { yazar: "Şeyyad Hamza", eserler: ["Yusuf u Züleyha"] },
+    { yazar: "Ahmet Fakih", eserler: ["Çarhname"] },
+    { yazar: "Mevlana", eserler: ["Mesnevi", "Divan-ı Kebir", "Mektubat", "Fihi Ma Fih"] },
+    { yazar: "Sultan Veled", eserler: ["İntihaname", "İbtidaname"] },
+    { yazar: "Aşık Paşa", eserler: ["Garipname", "Fakrname"] },
+    { yazar: "Gülşehri", eserler: ["Mantıkut Tayr"] },
+    { yazar: "Ahmet Paşa", eserler: ["Kerem Kasidesi"] },
+    { yazar: "Ahmedi", eserler: ["İskendername"] },
+    { yazar: "Süleyman Çelebi", eserler: ["Vesiletün Necat"] },
+    { yazar: "Şeyhi", eserler: ["Harname"] },
+    { yazar: "Ali Şir Nevaî", eserler: ["Muhakemetül Lügateyn"] },
+    { yazar: "Fuzuli", eserler: ["Leyla vü Mecnun", "Hadikatüs Süeda", "Sakiname", "Beng ü Bade", "Şikayetname", "Su Kasidesi"] },
+    { yazar: "Baki", eserler: ["Kanuni Mersiyesi", "Fezaili Mekke"] },
+    { yazar: "Taşlıcalı Yahya", eserler: ["Şah u Geda", "Yusuf u Züleyha"] },
+    { yazar: "Nefi", eserler: ["Siham-ı Kaza"] },
+    { yazar: "Nabi", eserler: ["Hayriyye", "Hayrabad"] },
+    { yazar: "Şeyh Galip", eserler: ["Hüsn ü Aşk"] },
+  ],
+  tanzimat: [
+    { yazar: "Şinasi", eserler: ["Şair Evlenmesi"] },
+    { yazar: "Namık Kemal", eserler: ["Hürriyet Kasidesi", "Vaveyla", "İntibah", "Cezmi", "Vatan Yahut Silistre", "Tahrib-i Harabat"] },
+    { yazar: "Ziya Paşa", eserler: ["Eşar-ı Ziya", "Zafername", "Şiir ve İnşa", "Harabat"] },
+    { yazar: "Şemsettin Sami", eserler: ["Taaşşuk-ı Talat ve Fitnat"] },
+    { yazar: "Recaizade Mahmut Ekrem", eserler: ["Araba Sevdası", "Nijat Ekrem", "Nağme-i Seher", "Zemzeme", "Çok Bilen Çok Yanılır", "Afife Anjelik", "Talim-i Edebiyat"] },
+    { yazar: "Abdülhak Hamit Tarhan", eserler: ["Sahra", "Makber", "Ölü", "Hacle", "Finten", "Eşber", "Liberte"] },
+    { yazar: "Muallim Naci", eserler: ["Ateşpare", "Şerare", "Firuze", "Köylü Kızların Şarkısı", "Demdeme"] },
+    { yazar: "Nabizade Nazım", eserler: ["Karabibik", "Zehra"] },
+    { yazar: "Samipaşazade Sezai", eserler: ["Sergüzeşt", "Küçük Şeyler"] },
+  ],
+  servet: [
+    { yazar: "Cenap Şahabettin", eserler: ["Elhan-ı Şita", "Tamat", "Hac Yolunda", "Avrupa Mektupları", "Suriye Mektupları", "Tiryaki Sözler"] },
+    { yazar: "Mehmet Rauf", eserler: ["Eylül", "Siyah İnciler"] },
+    { yazar: "Hüseyin Cahit Yalçın", eserler: ["Nadide", "Hayal İçinde", "Kavgalarım"] },
+    { yazar: "Ahmet Rasim", eserler: ["Gülüp Ağladıklarım", "Eşkal-i Zaman"] },
+    { yazar: "Hüseyin Rahmi Gürpınar", eserler: ["Şıpsevdi", "Şık", "Mürebbiye"] },
+    { yazar: "Tevfik Fikret", eserler: ["Şermin", "Rübab-ı Şikeste", "Rübabın Cevabı", "Haluk'un Defteri", "Han-ı Yağma", "Sis"] },
+    { yazar: "Halit Ziya Uşaklıgil", eserler: ["Mai ve Siyah", "Aşk-ı Memnu", "Kırık Hayatlar", "Ferdi ve Şürekası", "Nemide", "Kırk Yıl"] },
+  ],
+  milli: [
+    { yazar: "Ahmet Haşim", eserler: ["Gurebhane-i Laklakan", "Frankfurt Seyahatnamesi", "Göl Saatleri", "Piyale"] },
+    { yazar: "Ziya Gökalp", eserler: ["Kızıl Elma", "Altın Işık", "Yeni Hayat", "Türkçülüğün Esasları"] },
+    { yazar: "Mehmet Emin Yurdakul", eserler: ["Türk Sazı", "Ey Türk Uyan", "Turana Doğru", "Türkçe Şiirler"] },
+    { yazar: "Ömer Seyfettin", eserler: ["Pembe İncili Kaftan", "Kaşağı", "Başını Vermeyen Şehit", "Falaka", "Gizli Mabed"] },
+    { yazar: "Halide Edip Adıvar", eserler: ["Sinekli Bakkal", "Handan", "Vurun Kahpeye", "Ateşten Gömlek", "Dağa Çıkan Kurt"] },
+    { yazar: "Reşat Nuri Güntekin", eserler: ["Çalıkuşu", "Yaprak Dökümü", "Yeşil Gece", "Miskinler Tekkesi", "Acımak", "Damga"] },
+    { yazar: "Yakup Kadri Karaosmanoğlu", eserler: ["Yaban", "Sodom ve Gomore", "Kiralık Konak", "Nur Baba", "Hüküm Gecesi", "Panorama"] },
+    { yazar: "Refik Halit Karay", eserler: ["Sürgün", "Bugünün Saraylısı", "İstanbul'un İç Yüzü", "Memleket Hikayeleri"] },
+    { yazar: "Yahya Kemal Beyatlı", eserler: ["Kendi Gök Kubbemiz", "Siste Söyleniş", "Sessiz Gemi", "Eski Şiirin Rüzgarıyla"] },
+    { yazar: "Mehmet Akif Ersoy", eserler: ["Safahat", "Küfe", "Asım", "Süleymaniye Kürsüsünde"] },
+  ],
+  cumhuriyet: [
+    { yazar: "Necip Fazıl Kısakürek", eserler: ["Kaldırımlar", "Bir Adam Yaratmak", "Tohum"] },
+    { yazar: "Cahit Sıtkı Tarancı", eserler: ["35 Yaş", "Ömrümde Sükut", "Düşten Güzel"] },
+    { yazar: "Ahmet Muhip Dıranas", eserler: ["Kar", "Olvido", "Fahriye Abla", "Serenad"] },
+    { yazar: "Asaf Halet Çelebi", eserler: ["Lamelif", "He", "Om Mani Padme Hum"] },
+    { yazar: "Ahmet Hamdi Tanpınar", eserler: ["Bursa'da Zaman", "Saatleri Ayarlama Enstitüsü", "Abdullah Efendi'nin Rüyaları", "Huzur"] },
+    { yazar: "Ziya Osman Saba", eserler: ["Mesut İnsanlar Fotoğrafhanesi", "Sebil ve Güvercinler"] },
+    { yazar: "Nazım Hikmet", eserler: ["835 Satır", "Sesini Kaybeden Şehir", "Memleketimden İnsan Manzaraları", "Tahir ile Zühre", "Ferhat ile Şirin"] },
+    { yazar: "Rıfat Ilgaz", eserler: ["Hababam Sınıfı", "Yarenlik"] },
+    { yazar: "Orhan Veli Kanık", eserler: ["İstanbul'u Dinliyorum", "Vazgeçemediğim", "Yenisi"] },
+    { yazar: "Melih Cevdet Anday", eserler: ["Mikado'nun Çöpleri", "Rahatı Kaçan Ağaç", "Kolları Bağlı Odise"] },
+    { yazar: "Cemal Süreya", eserler: ["Üvercinka", "Beni Öp Sonra Doğur Beni"] },
+    { yazar: "Turgut Uyar", eserler: ["Tütünler Islak", "Kayayı Delen İncir", "Dünyanın En Güzel Arabistanı"] },
+    { yazar: "Edip Cansever", eserler: ["Yerçekimli Karanfil"] },
+    { yazar: "Sezai Karakoç", eserler: ["Mona Rosa", "Şahdamar"] },
+    { yazar: "Fazıl Hüsnü Dağlarca", eserler: ["Üç Şehitler Destanı", "Çocuk ve Allah"] },
+    { yazar: "Faruk Nafiz Çamlıbel", eserler: ["Han Duvarları", "Çoban Çeşmesi", "Dinle Neyden"] },
+    { yazar: "Arif Nihat Asya", eserler: ["Bir Bayrak Rüzgar Bekliyor", "Dualar ve Aminler"] },
+    { yazar: "Kemalettin Kamu", eserler: ["Bingöl Çobanları"] },
+    { yazar: "Orhan Şaik Gökyay", eserler: ["Bu Vatan Kimin"] },
+    { yazar: "Atilla İlhan", eserler: ["Ben Sana Mecburum", "Sisler Bulvarı", "Duvar"] },
+    { yazar: "Peyami Safa", eserler: ["Dokuzuncu Hariciye Koğuşu", "Fatih Harbiye", "Yalnızız"] },
+    { yazar: "Tarık Buğra", eserler: ["Küçük Ağa"] },
+    { yazar: "Memduh Şevket Esendal", eserler: ["Ayaşlı ve Kiracıları", "Mendil Altında"] },
+    { yazar: "Kemal Tahir", eserler: ["Esir Şehrin İnsanları", "Devlet Ana", "Kurt Kanunu"] },
+    { yazar: "Sait Faik Abasıyanık", eserler: ["Semaver", "Kayıp Aranıyor", "Medarı Maişet Motoru"] },
+    { yazar: "Yusuf Atılgan", eserler: ["Aylak Adam", "Anayurt Oteli"] },
+    { yazar: "Adalet Ağaoğlu", eserler: ["Fikrimin İnce Gülü", "Ölmeye Yatmak"] },
+    { yazar: "Sabahattin Ali", eserler: ["Kuyucaklı Yusuf", "Kürk Mantolu Madonna", "İçimizdeki Şeytan", "Kağnı", "Değirmen"] },
+    { yazar: "Yaşar Kemal", eserler: ["İnce Memed", "Ölmez Otu", "Ağrı Dağı Efsanesi"] },
+    { yazar: "Orhan Kemal", eserler: ["Baba Evi", "Avare Yıllar", "Bereketli Topraklar Üzerinde"] },
+    { yazar: "İhsan Oktay Anar", eserler: ["Puslu Kıtalar Atlası"] },
+    { yazar: "Orhan Pamuk", eserler: ["Benim Adım Kırmızı", "Kara Kitap", "Kar", "Beyaz Kale"] },
+    { yazar: "Oğuz Atay", eserler: ["Tutunamayanlar"] },
+    { yazar: "Haldun Taner", eserler: ["Keşanlı Ali Destanı"] },
+    { yazar: "Güngör Dilmen", eserler: ["Deli Dumrul"] },
+    { yazar: "Fakir Baykurt", eserler: ["Yılanların Öcü", "Irazca'nın Dirliği"] },
+    { yazar: "Nezihe Meriç", eserler: ["Korsan Çıkmazı", "Bozbulanık"] },
+    { yazar: "Latife Tekin", eserler: ["Sevgili Arsız Ölüm"] },
+  ],
+};
+
+const DONEM_LABEL = {
+  halk: "Halk Edebiyatı",
+  divan: "Divan Edebiyatı",
+  tanzimat: "Tanzimat Edebiyatı",
+  servet: "Servet-i Fünun",
+  milli: "Milli Edebiyat",
+  cumhuriyet: "Cumhuriyet Edebiyatı",
+  karisik: "Karışık",
+};
+
+const DONEM_RENK = {
+  halk: "var(--halk)",
+  divan: "var(--divan)",
+  tanzimat: "var(--tanzimat)",
+  servet: "var(--servet)",
+  milli: "var(--milli)",
+  cumhuriyet: "var(--cumhuriyet)",
+  karisik: "var(--accent)",
+};
+
+const HARFLER = ['A', 'B', 'C', 'D'];
+const TOPLAM_SORU = 20;
+
+let seciliDonem = null;
+let sorular = [];
+let soruIndex = 0;
+let dogruSay = 0;
+let yanlisSay = 0;
+let puanToplam = 0;
+let cevapVerildi = false;
+
+function donemSec(btn) {
+  document.querySelectorAll('.donem-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  seciliDonem = btn.dataset.donem;
+  document.getElementById('basla-btn').disabled = false;
+}
+
+function getDonemWriters(donem) {
+  if (donem === 'karisik') {
+    return Object.values(VERI).flat();
+  }
+  return VERI[donem] || [];
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function soruOlustur(donem) {
+  // Havuz: aynı dönem ya da karışık modda tüm dönemler
+  const yazarHavuzu = getDonemWriters(donem);
+
+  // Eser seç (rastgele yazar ve onun eseri)
+  const dogru = yazarHavuzu[Math.floor(Math.random() * yazarHavuzu.length)];
+  const dogru_eser = dogru.eserler[Math.floor(Math.random() * dogru.eserler.length)];
+
+  // Yanlış şıklar: aynı dönemden, doğru yazar dışındaki yazarlar
+  const yapisHavuzu = yazarHavuzu.filter(y => y.yazar !== dogru.yazar);
+  const yapislar = shuffle(yapisHavuzu).slice(0, 3).map(y => y.yazar);
+
+  // Şıkları karıştır
+  const secenekler = shuffle([dogru.yazar, ...yapislar]);
+
+  // Hangi dönemden (karışık modda soru için dönem bul)
+  let bulunanDonem = donem;
+  if (donem === 'karisik') {
+    for (const [d, yazilar] of Object.entries(VERI)) {
+      if (yazilar.some(y => y.yazar === dogru.yazar)) {
+        bulunanDonem = d;
+        break;
+      }
+    }
+  }
+
+  return { eser: dogru_eser, dogru: dogru.yazar, secenekler, donem: bulunanDonem };
+}
+
+function oyunuBaslat() {
+  if (!seciliDonem) return;
+
+  // 20 benzersiz soru üret
+  sorular = [];
+  const kullanilan = new Set();
+  let deneme = 0;
+
+  while (sorular.length < TOPLAM_SORU && deneme < 500) {
+    deneme++;
+    const soru = soruOlustur(seciliDonem);
+    const anahtar = soru.eser;
+    if (!kullanilan.has(anahtar)) {
+      kullanilan.add(anahtar);
+      sorular.push(soru);
+    }
+  }
+
+  soruIndex = 0;
+  dogruSay = 0;
+  yanlisSay = 0;
+  puanToplam = 0;
+  cevapVerildi = false;
+
+  document.getElementById('donem-secim').style.display = 'none';
+  document.getElementById('oyun-ekran').style.display = 'block';
+  document.getElementById('sonuc-ekran').style.display = 'none';
+
+  soruGoster();
+}
+
+function soruGoster() {
+  if (soruIndex >= sorular.length) {
+    sonucGoster();
+    return;
+  }
+
+  cevapVerildi = false;
+  const soru = sorular[soruIndex];
+
+  // Progress
+  const pct = (soruIndex / sorular.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  // Skor bar
+  document.getElementById('soru-no').textContent = `${soruIndex + 1}/${sorular.length}`;
+  document.getElementById('dogru-sayisi').textContent = dogruSay;
+  document.getElementById('yanlis-sayisi').textContent = yanlisSay;
+  document.getElementById('skor').textContent = puanToplam;
+
+  // Dönem badge
+  const badge = document.getElementById('donem-badge');
+  badge.textContent = DONEM_LABEL[soru.donem];
+  badge.style.color = DONEM_RENK[soru.donem];
+  badge.style.borderColor = DONEM_RENK[soru.donem];
+  badge.style.background = DONEM_RENK[soru.donem].replace('var(', '').replace(')', '').trim() + '18';
+
+  // Eser adı
+  document.getElementById('eser-adi').textContent = soru.eser;
+
+  // Şıklar
+  const kont = document.getElementById('secenekler');
+  kont.innerHTML = '';
+  soru.secenekler.forEach((yazr, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'secenek-btn';
+    btn.innerHTML = `<span class="secenek-harf">${HARFLER[i]}</span> ${yazr}`;
+    btn.onclick = () => cevapVer(btn, yazr, soru.dogru);
+    kont.appendChild(btn);
+  });
+
+  // Sonuç mesajını gizle
+  const msg = document.getElementById('sonuc-mesaj');
+  msg.className = 'sonuc-mesaj';
+  msg.textContent = '';
+
+  // Devam butonunu gizle
+  document.getElementById('devam-btn').style.display = 'none';
+}
+
+function cevapVer(secilenBtn, secilen, dogru) {
+  if (cevapVerildi) return;
+  cevapVerildi = true;
+
+  const butonlar = document.querySelectorAll('.secenek-btn');
+  butonlar.forEach(btn => btn.disabled = true);
+
+  // Tüm şıkları işaretle
+  butonlar.forEach(btn => {
+    const metni = btn.textContent.replace(/^[ABCD]\s*/, '').trim();
+    if (metni === dogru) {
+      btn.classList.add('dogru');
+    }
+  });
+
+  const msg = document.getElementById('sonuc-mesaj');
+
+  if (secilen === dogru) {
+    secilenBtn.classList.add('dogru');
+    dogruSay++;
+    puanToplam += 5;
+    msg.className = 'sonuc-mesaj dogru';
+    msg.innerHTML = `✓ Doğru! <em>${dogru}</em>`;
+  } else {
+    secilenBtn.classList.add('yanlis');
+    yanlisSay++;
+    msg.className = 'sonuc-mesaj yanlis';
+    msg.innerHTML = `✗ Yanlış. Doğru cevap: <em>${dogru}</em>`;
+  }
+
+  document.getElementById('devam-btn').style.display = 'block';
+}
+
+function sonrakiSoru() {
+  soruIndex++;
+  if (soruIndex >= sorular.length) {
+    sonucGoster();
+  } else {
+    soruGoster();
+  }
+}
+
+function sonucGoster() {
+  document.getElementById('oyun-ekran').style.display = 'none';
+  document.getElementById('sonuc-ekran').style.display = 'block';
+
+  const toplam = sorular.length;
+  const yuzde = Math.round((dogruSay / toplam) * 100);
+
+  document.getElementById('fin-dogru').textContent = dogruSay;
+  document.getElementById('fin-yanlis').textContent = yanlisSay;
+  document.getElementById('fin-yuzde').textContent = yuzde + '%';
+  document.getElementById('sonuc-puan').textContent = puanToplam;
+
+  let baslik, yorum;
+  if (yuzde >= 90) {
+    baslik = "Mükemmel!";
+    yorum = "Türk edebiyatına hakim birisin. AYT'de üstünden soruları rahatlıkla çözeceksin.";
+  } else if (yuzde >= 70) {
+    baslik = "Çok İyi!";
+    yorum = "Güçlü bir bilgiye sahipsin. Birkaç tekrarla mükemmelleşirsin.";
+  } else if (yuzde >= 50) {
+    baslik = "Gelişiyor!";
+    yorum = "Temel bilgilerin var ama eser-yazar eşleştirmeleri için daha fazla pratik yapman iyi olur.";
+  } else {
+    baslik = "Devam Et!";
+    yorum = "Bu dönemin yazarlarını ve eserlerini tekrar gözden geçir, sonra tekrar dene.";
+  }
+
+  document.getElementById('sonuc-baslik').textContent = baslik;
+  document.getElementById('sonuc-yorum').textContent = yorum;
+}
+
+function tekrarOyna() {
+  oyunuBaslat();
+}
+
+function anaMenuye() {
+  document.getElementById('oyun-ekran').style.display = 'none';
+  document.getElementById('sonuc-ekran').style.display = 'none';
+  document.getElementById('donem-secim').style.display = 'block';
+}
+</script>
+</body>
+</html>
